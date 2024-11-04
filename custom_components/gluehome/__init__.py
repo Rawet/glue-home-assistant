@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
                 config_entry_id=config.entry_id,  # Use the config entry ID
                 identifiers={(DOMAIN, lock.id)},
                 manufacturer=DEVICE_MANUFACTURER,
-                name=lock.name,
+                name=lock.description,
                 model=getattr(lock, 'model', 'Glue Lock'),  # Fallback if model not available
                 sw_version=getattr(lock, 'firmware_version', None)  # Optional firmware version
             )
@@ -93,7 +93,7 @@ def add_device(device_registry, lock: GlueHomeLock):
             (DOMAIN, lock.serial_number),
         },
         manufacturer=DEVICE_MANUFACTURER,
-        name=lock.name,
+        name=lock.description,
         model=lock.model_name,
         sw_version=lock.firmware_version,
     )
