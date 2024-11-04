@@ -59,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
         hass.config_entries.async_forward_entry_setup(config, "sensor")
     )
 
-    device_registry = dr.async_get(hass)
+    # device_registry = dr.async_get(hass)
     try:
         for lock in locks:
             _LOGGER.debug(f"Processing lock: {lock}")
