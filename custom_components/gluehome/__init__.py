@@ -83,17 +83,3 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
     )
 
     return True
-
-
-def add_device(device_registry, lock: GlueHomeLock):
-    device_registry.async_get_or_create(
-        config_entry_id=lock.id,
-        identifiers={
-            (DOMAIN, lock.id),
-            (DOMAIN, lock.serial_number),
-        },
-        manufacturer=DEVICE_MANUFACTURER,
-        name=lock.description,
-        model=lock.model_name,
-        sw_version=lock.firmware_version,
-    )
