@@ -23,7 +23,6 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
         return False
 
     _LOGGER.info("Setting up locks for Glue Home")
-
     api = GlueHomeLocksApi(config.data.get(CONF_API_KEY))
 
     async def async_update_data():
@@ -45,31 +44,20 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
     )
 
     await coordinator.async_config_entry_first_refresh()
-
     locks = coordinator.data
     _LOGGER.info(f"Found {len(locks)} Glue Home locks")
 
-    hass.data.setdefault(DOMAIN, {})[config.entry_id] = coordinator
-
-    await hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(config, "lock")
-    )
-
-    await hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(config, "sensor")
-    )
-
-    # device_registry = dr.async_get(hass)
+    device_registry = dr.async_get(hass)
     try:
         for lock in locks:
             _LOGGER.debug(f"Processing lock: {lock}")
             device_registry.async_get_or_create(
-                config_entry_id=config.entry_id,  # Use the config entry ID
+                config_entry_id=config.entry_id,
                 identifiers={(DOMAIN, lock.id)},
                 manufacturer=DEVICE_MANUFACTURER,
                 name=lock.description,
-                model=getattr(lock, 'model', 'Glue Lock'),  # Fallback if model not available
-                sw_version=getattr(lock, 'firmware_version', None)  # Optional firmware version
+                model=getattr(lock, 'model', 'Glue Lock'),
+                sw_version=getattr(lock, 'firmware_version', None)
             )
     except Exception as e:
         _LOGGER.error(f"Error registering device: {e}")
@@ -77,9 +65,10 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
 
     hass.data[DOMAIN][config.entry_id] = coordinator
 
-    # Forward platform setup
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(config, "lock")
-    )
+    # Set up platforms - only once for each
+    for platform in ["lock", "sensor"]:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(config, platform)
+        )
 
     return True
