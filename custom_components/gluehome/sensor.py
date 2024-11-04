@@ -5,9 +5,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import DEVICE_CLASS_BATTERY, \
     PERCENTAGE, ENTITY_CATEGORY_DIAGNOSTIC, DEVICE_CLASS_TIMESTAMP
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity
+
 
 from .api import GlueHomeLock, SUCCESSFUL_CONNECTED_STATUSES
 from .const import DOMAIN
@@ -95,3 +96,23 @@ class GlueHomeLastLockEventTimeEntity(GlueHomeBaseEntity, SensorEntity):
     @property
     def state(self) -> StateType:
         return self._lock().last_lock_event_time
+
+# Update your sensor class definition:
+class GlueHomeSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator, lock: GlueHomeLock):
+        super().__init__(coordinator)
+        self._lock = lock
+        # Use proper enum value instead of string
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        
+        # Other initialization code...
+
+# If you're creating sensors in async_setup_entry:
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    sensors = []
+    
+    for lock in coordinator.data:
+        sensors.append(GlueHomeSensor(coordinator, lock))
+    
+    async_add_entities(sensors)

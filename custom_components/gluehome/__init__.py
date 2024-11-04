@@ -60,8 +60,27 @@ async def async_setup_entry(hass: HomeAssistant, config: config_entries.ConfigEn
     )
 
     device_registry = dr.async_get(hass)
-    for lock in locks:
-        add_device(device_registry, lock)
+    try:
+        for lock in locks:
+            _LOGGER.debug(f"Processing lock: {lock}")
+            device_registry.async_get_or_create(
+                config_entry_id=config.entry_id,  # Use the config entry ID
+                identifiers={(DOMAIN, lock.id)},
+                manufacturer=DEVICE_MANUFACTURER,
+                name=lock.name,
+                model=getattr(lock, 'model', 'Glue Lock'),  # Fallback if model not available
+                sw_version=getattr(lock, 'firmware_version', None)  # Optional firmware version
+            )
+    except Exception as e:
+        _LOGGER.error(f"Error registering device: {e}")
+        raise ConfigEntryNotReady from e
+
+    hass.data[DOMAIN][config.entry_id] = coordinator
+
+    # Forward platform setup
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(config, "lock")
+    )
 
     return True
 
