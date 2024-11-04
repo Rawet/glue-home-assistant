@@ -93,7 +93,7 @@ def add_device(device_registry, lock: GlueHomeLock):
             (DOMAIN, lock.serial_number),
         },
         manufacturer=DEVICE_MANUFACTURER,
-        name=lock.description,
+        name=lock.name,
         model=lock.model_name,
         sw_version=lock.firmware_version,
     )
